@@ -1,5 +1,5 @@
 # opensignalsreader
-Python package to read OpenSignals (r)evolution files and automatic sensor data conversion for BITalino (r)evolution sensor data.
+Python package to read [OpenSignals (r)evolution](http://bitalino.com/en/software) files and automatic sensor data conversion for [BITalino (r)evolution](http://bitalino.com) sensor data.
 
 ### Examples & How to Use this Package
 This package comes with the OpenSignalsReader class to facilitate the import sensor signals from OpenSignals (r)evolution acquisition and the metadata of the respective acquisition. The examples below demonstrate how to use this class to load OpenSignals files, access signals, access metadata, and how to plot the imported sensor data.
@@ -108,6 +108,16 @@ http://bitalino.com/en/learn/documentation
 
 BITalino (r)evolution sample files can be found here:
 https://github.com/BITalinoWorld/revolution-sample-data
+
+Download the OpenSignals (r)evolution software from the BITalino website:
+http://bitalino.com/en/software
+
+Download the OpenSignals (r)evolution software from the biosignalsplux website:
+http://biosignalsplux.com/en/software
+
+### Important Notes
+- OpenSignals (r)evolution files in .H5 or .EDF format are not supported (yet)
+- No multi-device acquisition functions supported (yet, currently limited to a single device only) 
 
 ### Dependencies
 - [matplotlib](https://matplotlib.org)
