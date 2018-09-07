@@ -1,0 +1,10 @@
+
+*.pyc
+.DS_Store
+.idea/misc.xml
+.idea/modules.xml
+.idea/opensignalsreader.iml
+.idea/vcs.xml
+.idea/workspace.xml
+playground.py
+sample.txt

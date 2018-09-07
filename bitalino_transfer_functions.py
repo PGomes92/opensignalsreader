@@ -85,7 +85,7 @@ def ecg(samples=None, resolution=10):
 	samples = _check_input(samples, resolution)
 
 	# Compute output
-	return [((((float(s) / (2 ** resolution)) - 0.5) * 3.3) / 1100) * 1000 for s in samples]
+	return np.asarray([((((float(s) / (2 ** resolution)) - 0.5) * 3.3) / 1100) * 1000 for s in samples])
 
 
 def eeg(samples, resolution=10):
@@ -125,7 +125,7 @@ def eeg(samples, resolution=10):
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	return [((((float(s) / 2 ** resolution) - 0.5) * 3.3) / 40000) * (10 ** 6) for s in samples]
+	return np.asarray([((((float(s) / 2 ** resolution) - 0.5) * 3.3) / 40000) * (10 ** 6) for s in samples])
 
 
 def emg(samples=None, resolution=10):
@@ -170,7 +170,7 @@ def emg(samples=None, resolution=10):
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	return [((((float(s) / 2 ** resolution) - 0.5) * 3.3) / 1009) * 1000 for s in samples]
+	return np.asarray([((((float(s) / 2 ** resolution) - 0.5) * 3.3) / 1009) * 1000 for s in samples])
 
 
 def eda(samples=None, resolution=10):
@@ -215,16 +215,17 @@ def eda(samples=None, resolution=10):
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	return [(((float(s) / (2 ** resolution)) * 3.3) - 0.574) / 0.132 for s in samples]
+	return np.asarray([((float(s) / (2 ** resolution)) * 3.3) / 0.132 for s in samples])
 
 
-def acc(samples=None, resolution=10, c_min=28000, c_max=38000):
+def acc(samples=None, resolution=10, c_min=400, c_max=600):
 	"""Converts raw acc value(s) into original units.
 
 	See sensor datasheet for more information:
 	http://bitalino.com/datasheets/REVOLUTION_ACC_Sensor_Datasheet.pdf
 
-	[TRANSFER FUNCTION]
+	Transfer Function
+	-----------------
 	ACC(g) = ((ADC - Cmin)/(Cmax - Cmin)) * 2 - 1
 
 		- ACC(g)	Sample value in g.
@@ -234,6 +235,10 @@ def acc(samples=None, resolution=10, c_min=28000, c_max=38000):
 
 	[RANGE]
 	-3g to 3g
+
+	Notes
+	-----
+	Cmin and Cmax should be calibrated for each sensors as indicated in the datasheet.
 
 	--
 
@@ -259,12 +264,8 @@ def acc(samples=None, resolution=10, c_min=28000, c_max=38000):
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	if c_min is 28000 or c_max is 38000:
-		warnings.warn("Using standard calibration values. \
-		Sensor calibration is recommended.")
-
 	# Conversion
-	return [((float(s) - c_min) / (c_max - c_min)) * 2 - 1 for s in samples]
+	return np.asarray([2 * ((float(s) - c_min) / (c_max - c_min) - .5) for s in samples])
 
 
 def temp(samples=None, resolution=10, unit='c'):
@@ -314,7 +315,7 @@ def temp(samples=None, resolution=10, unit='c'):
 	samples = _check_input(samples, resolution)
 
 	# Compute in degrees Celcius
-	temp = [(float(s) / 2 ** resolution - 0.5) * 100 for s in samples]
+	temp = np.asarray([(float(s) / 2 ** resolution - 0.5) * 100 for s in samples])
 
 	if unit is 'f':
 		# Convert to Fahrenheit
@@ -387,7 +388,7 @@ def ntc(samples=None, resolution=10, unit='c'):
 	a2 = 8.77303013 * 10 ** 8
 
 	# Compute temperature in Kelvin
-	temp = 1 / (a0 + a1 * np.log(ntc) + a2 * np.log(ntc) ** 3)
+	temp = np.asarray(1 / (a0 + a1 * np.log(ntc) + a2 * np.log(ntc) ** 3))
 
 	if unit is 'c':
 		# Convert to Celcius
@@ -438,7 +439,7 @@ def lux(samples=None, resolution=10):
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	return [s * 100. / 2 ** resolution for s in samples]
+	return np.asarray([s * 100. / 2 ** resolution for s in samples])
 
 
 def osl(samples=None, resolution=10):
@@ -480,7 +481,7 @@ def osl(samples=None, resolution=10):
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	return [0.25 * 2 ** (10 - resolution) * float(s) - 0.8 for s in samples]
+	return np.asarray([0.25 * 2 ** (10 - resolution) * float(s) - 0.8 for s in samples])
 
 
 def bpr(samples=None, resolution=10):
@@ -521,7 +522,7 @@ def bpr(samples=None, resolution=10):
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	return [0.25 * 2 ** (10 - resolution) * float(s) - 0.8 for s in samples]
+	return np.asarray([0.25 * 2 ** (10 - resolution) * float(s) - 0.8 for s in samples])
 
 
 def gmr(samples=None, resolution=10):
@@ -561,7 +562,7 @@ def gmr(samples=None, resolution=10):
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	return [0.25 * 2 ** (10 - resolution) * float(s) - 0.8 for s in samples]
+	return np.asarray([0.25 * 2 ** (10 - resolution) * float(s) - 0.8 for s in samples])
 
 
 def _check_input(samples, resolution=None):
@@ -608,7 +609,7 @@ units = {
 	'ECG': 'mV',
 	'EEG': u'µV',
 	'EMG': 'mV',
-	'EDA': u'µmS',
+	'EDA': u'µS',
 	'ACC': 'g',
 	'GLUC': 'mg/dL',
 	'TEMP': u'°C',
