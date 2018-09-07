@@ -498,7 +498,6 @@ class OpenSignalsReader():
 			if len(sensors) == 5:
 				axs[2][1].set_visible(False)
 			for n, sens in enumerate(sensors):
-				print(row, column)
 				key = self._get_key(sens)
 				channel = self._channels_sensors[sens]
 

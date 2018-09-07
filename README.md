@@ -50,6 +50,8 @@ acq = OpenSignalsReader('SampleECG.txt', show=True)
 # Read OpenSignals file and plot all raw signals.
 acq = OpenSignalsReader('SampleECG.txt', show=True, raw=True)
 ```
+Plotting a single channel ECG signal results in the plot below.
+![Image](SampleECG.png)
 
 Alternatively, select the individual signals you want to plot using the `OpenSignalsReader.plot()` and the signal sensor label or channel number.
 ```python
@@ -76,7 +78,7 @@ This package includes the _bitalino_transfer_functions_ module which contains al
 
 This package can also be useful if you want to convert sensor signals within your own software when not importing signals from the OpenSignals files.
 
-BITalino sample series can be converted into their original units using the sensor's transfer function. See below how to use the functions of the _bitalino_ module on the example of the ECG sensor.
+BITalino sample series can be converted into their original units using the sensor's transfer function. See below how to use the functions of this module on the example of the ECG sensor.
 ```python
 import numpy as np
 from opensignalsreader.bitalino_transfer_functions import ecg
