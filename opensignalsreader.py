@@ -477,52 +477,62 @@ class OpenSignalsReader():
 			if figsize is None:
 				figsize = (12, 6)
 
-			rows = np.size(sensors) if np.size(sensors) <= 4 else 4
-			columns = 1 if np.size(sensors) <= 4 else 2
+			n_plots = len(sensors)
+
+			# Prepare figure and plots
+			if len(sensors) in [1,2,3]:
+				rows, columns = len(sensors), 1
+			elif len(sensors) == 4:
+				rows, columns = 2, 2
+			elif len(sensors) in [5, 6]:
+				rows, columns = 3, 2
+
 			fig, axs = plt.subplots(nrows=rows, ncols=columns, sharex=True, figsize=figsize)
 			fig.suptitle('Sensor Signals\n(OpenSignals (r)evolution file: %s)' % self.file_name)
+
+			# Plot signals
 			k = 0
-			for i in range(rows):
-				if columns == 2:
-					for j in range(columns):
-						sens = sensors[k]
-						key = self._get_key(sens)
-						channel = self._channels_sensors[sens]
-						if sensors not in self.transfer_functions.keys():
-							key = 'RAW'
-						if raw:
-							signal = self._raw_signals[sens]
-							units = 'RAW'
-							ranges = [0, 2**self.sampling_resolution[sens]]
-						else:
-							signal = self._converted_signals[sens]
-							units = self.units[key]
-							ranges = self.ranges[key]
-						axs[i][j].plot(self.t, signal[sens])
-						axs[i][j].axis([interval[0], interval[1], ranges[key][0], ranges[key][1]])
-						axs[i][j].set_ylabel('CH%i - %s (%s)' % (channel, sens, units))
-						axs[i][j].grid()
-						k += 1
-					axs[-1][0].set_xlabel('Time(s)')
-					axs[-1][1].set_xlabel('Time(s)')
+			column = 0
+			row = 0
+
+			if len(sensors) == 5:
+				axs[2][1].set_visible(False)
+			for n, sens in enumerate(sensors):
+				print(row, column)
+				key = self._get_key(sens)
+				channel = self._channels_sensors[sens]
+
+				if sens not in self.transfer_functions.keys():
+					key = 'RAW'
+
+				if raw:
+					signal = self._raw_signals[sens]
+					units = 'RAW'
+					ranges = [0, 2**self.sampling_resolution[sens]]
 				else:
-					sens = sensors[k]
-					key = self._get_key(sens)
-					channel = self._channels_sensors[sens]
-					if raw:
-						signal = self._raw_signals[sens]
-						units = 'RAW'
-						ranges = [0, 2 ** self.sampling_resolution[sens]]
-					else:
-						signal = self._converted_signals[sens]
-						units = self.units[key]
-						ranges = self.ranges[key]
-					axs[i].plot(self.t, signal)
-					axs[i].axis([interval[0], interval[1], ranges[0], ranges[1]])
-					axs[i].set_ylabel('CH%i - %s (%s)' % (channel, sens, units))
-					axs[i].grid()
-					k += 1
-					axs[-1].set_xlabel('Time(s)')
+					signal = self._converted_signals[sens]
+					units = self.units[key]
+					ranges = self.ranges[key]
+				if columns == 2:
+					axs[row][column].plot(self.t, signal)
+					axs[row][column].axis([interval[0], interval[1], ranges[0], ranges[1]])
+					axs[row][column].set_ylabel('CH%i - %s (%s)' % (channel, sens, units))
+					axs[row][column].grid()
+					if row == rows - 1:
+						axs[row][column].set_xlabel('Time (s)')
+				else:
+					axs[row].plot(self.t, signal)
+					axs[row].axis([interval[0], interval[1], ranges[0], ranges[1]])
+					axs[row].set_ylabel('CH%i - %s (%s)' % (channel, sens, units))
+					axs[row].grid()
+					if row == rows - 1:
+						axs[row].set_xlabel('Time (s)')
+				# Manage rows and columns
+				if row < rows - 1:
+					row += 1
+				else:
+					row = 0
+					column += 1
 		else:
 			# Plot single sensor signal
 			channel = self._channels_sensors[sensors]
