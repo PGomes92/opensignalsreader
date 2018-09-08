@@ -120,6 +120,7 @@ http://biosignalsplux.com/en/software
 ### Important Notes
 - OpenSignals (r)evolution files in .H5 or .EDF format are not supported (yet)
 - No multi-device acquisition functions supported (yet, currently limited to a single device only) 
+- Number of plotted signals is currently limited to 6 signals only
 
 ### Dependencies
 - [matplotlib](https://matplotlib.org)
