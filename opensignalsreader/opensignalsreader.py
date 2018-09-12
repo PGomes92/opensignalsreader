@@ -275,7 +275,7 @@ class OpenSignalsReader():
 		"""
 		# Return all signals
 		if sensors is None:
-			output = self._raw_signals
+			output = self._converted_signals
 
 		# Return all signals of a list in a wrapped in a dictionary
 		elif type(sensors) is list and len(sensors) > 1:
@@ -290,7 +290,7 @@ class OpenSignalsReader():
 
 				# Prepare output
 				for key in keys:
-					output.update({key: self._raw_signals[key]})
+					output.update({key: self._converted_signals[key]})
 
 			# Get signals for sensor label ist
 			elif all(isinstance(x, str) for x in sensors):
@@ -302,7 +302,7 @@ class OpenSignalsReader():
 				output = dict()
 				# Prepare output
 				for key in sensors:
-					output.update({key: self._raw_signals[key]})
+					output.update({key: self._converted_signals[key]})
 			# Raise error if list contains mixed channel numbers and sensor labels
 			else:
 				raise TypeError('Please provide only channel numbers (int) or channel labels (str).')
@@ -315,14 +315,14 @@ class OpenSignalsReader():
 			# Channel number
 			if type(sensors) is int:
 				if sensors in self._sensor_channels.keys():
-					output = self._raw_signals[self._sensor_channels[sensors]]
+					output = self._converted_signals[self._sensor_channels[sensors]]
 				else:
 					raise ValueError("Could not find channel %i in available channels." % sensors)
 
 			# Sensor label
 			if type(sensors) is str:
 				if sensors in self.sensors:
-					output = self._raw_signals[sensors]
+					output = self._converted_signals[sensors]
 				else:
 					raise ValueError("Could not find '%s' in available sensor data." % sensors)
 
