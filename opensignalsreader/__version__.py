@@ -10,4 +10,3 @@ Version tracker.
 
 VERSION = (0, 2, 1)
 __version__ = '.'.join(map(str, VERSION))
-print(__version__)
