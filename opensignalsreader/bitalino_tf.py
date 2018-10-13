@@ -1,6 +1,4 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 BITalino (r)evolution Transfer Functions
 ----------------------------------------
@@ -10,7 +8,8 @@ Provides functions to convert raw BITalino (r)evolution sensor samples (single s
 or entire datsets) into original physical units and supports the following sensors:
 
 	* ECG		* EEG		* EMG 		* EDA 		* ACC	* GMR
-	* TEMP		* NTC		* LUX 		* OSL		* BPR
+	* TEMP		* NTC		* LUX 		* OSL		* BPR	* EOG
+	* EGG
 
 Visit the following page for more detailed information about the transfer functions:
 http://bitalino.com/en/learn/documentation
@@ -42,7 +41,7 @@ Thesis Supervisors
 
 Last Update
 -----------
-29-08-2018
+13-10-2018
 
 """
 import warnings
@@ -51,6 +50,8 @@ import numpy as np
 
 def ecg(samples=None, resolution=10):
 	"""Converts raw ECG values into original physical unit (mV).
+
+	BITalino Sensor: Electrocardiography (ECG)
 
 	See sensor datasheet for more information:
 	http://bitalino.com/datasheets/REVOLUTION_ECG_Sensor_Datasheet.pdf
@@ -70,29 +71,39 @@ def ecg(samples=None, resolution=10):
 
 	Parameters
 	----------
-	samples : array
-		Raw digital sensor value.
+	samples : array of ints
+		Raw digital sensor values.
 	resolution : int, optional
 		Sampling resolution used during acquisition (6-bit or 10-bit).
 
 	Returns
 	-------
-	ecg_sample : float
-		Converted ECG sample (mV).
+	ecg_samples : array of floats
+		Converted ECG samples (mV).
 
+	Raises (via _check_input())
+	---------------------------
+	TypeError
+		If no input data is provided.
+	Warnings
+		If sampling resolution other than 6-bit or 10-bit is being used.
 	"""
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	# Compute output
-	return np.asarray([((((float(s) / (2 ** resolution)) - 0.5) * 3.3) / 1100) * 1000 for s in samples])
+	# Compute & check output
+	ecg_samples = np.asarray([((((float(s) / (2 ** resolution)) - 0.5) * 3.3) / 1100) * 1000 for s in samples])
+	_check_ranges(ecg_samples, 'ECG')
+	return ecg_samples
 
 
 def eeg(samples, resolution=10):
-	"""Converts single, raw EEG value into original physical unit (µV).
+	"""Converts raw EEG values into original physical unit (µV).
+
+	BITalino Sensor: Electroencephalography (EEG)
 
 	See sensor datasheet for more information:
-	http://bitalino.com/datasheets/EEG_Sensor_Datasheet.pdf
+	http://bitalino.com/datasheets/REVOLUTION_EEG_Sensor_Datasheet.pdf
 
 	[TRANSFER FUNCTION]
 	EEG(µV) = ((((ADC/2^n) - 0.5) * VCC) / GEEG) * (10^6)
@@ -110,13 +121,18 @@ def eeg(samples, resolution=10):
 
 	Parameters
 	----------
-	samples : array
-		Raw digital sensor value.
+	samples : array of ints
+		Raw digital sensor values.
 	resolution : int, optional
 		Sampling resolution used during acquisition (6-bit or 10-bit).
 
-	Raises
-	------
+	Returns
+	-------
+	eeg_samples : array of floats
+		Converted EEG sample.
+
+	Raises (via _check_input())
+	---------------------------
 	TypeError
 		If no input data is provided.
 	Warnings
@@ -125,11 +141,16 @@ def eeg(samples, resolution=10):
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	return np.asarray([((((float(s) / 2 ** resolution) - 0.5) * 3.3) / 40000) * (10 ** 6) for s in samples])
+	# Compute & check output
+	eeg_samples = np.asarray([((((float(s) / 2 ** resolution) - 0.5) * 3.3) / 40000) * (10 ** 6) for s in samples])
+	_check_ranges(eeg_samples, 'EEG')
+	return eeg_samples
 
 
 def emg(samples=None, resolution=10):
-	"""Converts single raw EMG value into original physical unit (mV).
+	"""Converts raw EMG values into original physical unit (mV).
+
+	BITalino Sensor: Electromyography (EMG)
 
 	See sensor datasheet for more information:
 	http://bitalino.com/datasheets/REVOLUTION_EMG_Sensor_Datasheet.pdf
@@ -150,18 +171,18 @@ def emg(samples=None, resolution=10):
 
 	Parameters
 	----------
-	samples : int
-		Raw digital sensor value.
+	samples : array of ints
+		Raw digital sensor values.
 	resolution : int, optional
 		Sampling resolution used during acquisition (6-bit or 10-bit).
 
 	Returns
 	-------
-	emg_sample : float
-		Converted EMG sample.
+	emg_samples : array of floats
+		Converted EMG samples (mV).
 
-	Raises
-	------
+	Raises (via _check_input())
+	---------------------------
 	TypeError
 		If no input data is provided.
 	Warnings
@@ -170,11 +191,16 @@ def emg(samples=None, resolution=10):
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	return np.asarray([((((float(s) / 2 ** resolution) - 0.5) * 3.3) / 1009) * 1000 for s in samples])
+	# Compute & check output
+	emg_samples = np.asarray([((((float(s) / 2 ** resolution) - 0.5) * 3.3) / 1009) * 1000 for s in samples])
+	_check_ranges(emg_samples, 'EMG')
+	return emg_samples
 
 
 def eda(samples=None, resolution=10):
 	"""Converts raw EDA values into original physical unit (µS).
+
+	BITalino Sensor: Electrodermal Activity (EDA)
 
 	See sensor datasheet for more information:
 	http://bitalino.com/datasheets/REVOLUTION_EDA_Sensor_Datasheet.pdf
@@ -195,18 +221,18 @@ def eda(samples=None, resolution=10):
 
 	Parameters
 	----------
-	samples : int
-		Raw digital sensor value.
+	samples : array of ints
+		Raw digital sensor values.
 	resolution : int, optional
 		Sampling resolution used during acquisition (6-bit or 10-bit; default: 10-bit).
 
 	Returns
 	-------
-	eda_sample : float
-		Converted EDA sample.
+	eda_samples : array of floats
+		Converted EDA samples (µS).
 
-	Raises
-	------
+	Raises (via _check_input())
+	---------------------------
 	TypeError
 		If no input data is provided.
 	Warnings
@@ -215,11 +241,16 @@ def eda(samples=None, resolution=10):
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	return np.asarray([((float(s) / (2 ** resolution)) * 3.3) / 0.132 for s in samples])
+	# Compute & check input
+	eda_samples = np.asarray([((float(s) / (2 ** resolution)) * 3.3) / 0.132 for s in samples])
+	_check_ranges(eda_samples, 'EDA')
+	return _check_ranges
 
 
 def acc(samples=None, resolution=10, c_min=400, c_max=600):
-	"""Converts raw acc value(s) into original units.
+	"""Converts raw ACC values into original units.
+
+	BITalino Sensor: Accelerometer (ACC)
 
 	See sensor datasheet for more information:
 	http://bitalino.com/datasheets/REVOLUTION_ACC_Sensor_Datasheet.pdf
@@ -244,8 +275,8 @@ def acc(samples=None, resolution=10, c_min=400, c_max=600):
 
 	Parameters
 	----------
-	samples : int
-		Raw digital sensor value.
+	samples : array of ints
+		Raw digital sensor values.
 	c_min : int
 		Minimum calibration value.
 	c_max : int
@@ -253,23 +284,29 @@ def acc(samples=None, resolution=10, c_min=400, c_max=600):
 
 	Returns
 	-------
-	acc_value : float
-		Converted ACC sample (g).
+	acc_values : array of floats
+		Converted ACC samples (g).
 
-	Raises
-	------
+	Raises (via _check_input())
+	---------------------------
 	TypeError
 		If no input data is provided.
+	Warnings
+		If sampling resolution other than 6-bit or 10-bit is being used.
 	"""
 	# Check input
 	samples = _check_input(samples, resolution)
 
 	# Conversion
-	return np.asarray([2 * ((float(s) - c_min) / (c_max - c_min) - .5) for s in samples])
+	acc_samples = np.asarray([2 * ((float(s) - c_min) / (c_max - c_min) - .5) for s in samples])
+	_check_ranges(acc_samples, 'ACC')
+	return acc_samples
 
 
 def temp(samples=None, resolution=10, unit='c'):
-	"""Converts single, raw TMP value into original physical units (°C, °F or °K).
+	"""Converts raw TMP values into original physical units (°C, °F or °K).
+
+	BITalino Sensor: Temperature (TMP)
 
 	See sensor datasheet for more information:
 	http://bitalino.com/datasheets/REVOLUTION_TMP_Sensor_Datasheet.pdf
@@ -292,8 +329,8 @@ def temp(samples=None, resolution=10, unit='c'):
 
 	Parameters
 	----------
-	samples : int
-		Raw digital sensor value.
+	samples : array of ints
+		Raw digital sensor values.
 	resolution : int, optional
 		Sampling resolution (6-bit or 10-bit; default: 10-bit).
 	unit : char
@@ -301,11 +338,11 @@ def temp(samples=None, resolution=10, unit='c'):
 
 	Returns
 	-------
-	temp : float
-		Converted temperature value (°C, °F or °K).
+	temp_samples : array of floats
+		Converted temperature values (°C, °F or °K).
 
-	Raises
-	------
+	Raises (via _check_input())
+	---------------------------
 	TypeError
 		If no input data is provided.
 	Warnings
@@ -324,11 +361,15 @@ def temp(samples=None, resolution=10, unit='c'):
 		# Convert to Kelvin
 		temp = temp - 273.15
 
+	# Check samples
+	_check_ranges(temp, 'temp')
 	return temp
 
 
 def ntc(samples=None, resolution=10, unit='c'):
-	"""Converts single, raw NTC value into original physical units (°C, °F or K).
+	"""Converts raw NTC values into original physical units (°C, °F or K).
+
+	BITalino Sensor: High-Definition Temperature Sensor (NTC)
 
 	See sensor datasheet for more information:
 	http://bitalino.com/datasheets/NTC_Sensor_Datasheet.pdf
@@ -358,8 +399,8 @@ def ntc(samples=None, resolution=10, unit='c'):
 
 	Parameters
 	----------
-	samples : int
-		Raw digital sensor value.
+	samples : array of ints
+		Raw digital sensor values.
 	resolution : int, optional
 		Sampling resolution used during acquisition (6-bit or 10-bit).
 	unit : char
@@ -367,11 +408,11 @@ def ntc(samples=None, resolution=10, unit='c'):
 
 	Returns
 	-------
-	temp : float
-		Converted temperature sample (°C, °F or °K).
+	temp_samples : array of floats
+		Converted temperature samples (°C, °F or °K).
 
-	Raises
-	------
+	Raises (via _check_input())
+	---------------------------
 	TypeError
 		If no input data is provided.
 	Warnings
@@ -397,11 +438,14 @@ def ntc(samples=None, resolution=10, unit='c'):
 		# Convert to Fahrenheit
 		temp = (temp - 273.15) * 9. / 5 + 32
 
+	_check_ranges(temp, 'ntc')
 	return temp
 
 
 def lux(samples=None, resolution=10):
-	"""Converts single, raw LUX value into original unit (%).
+	"""Converts raw LUX value into original unit (%).
+
+	BITalino Sensor: Light (LUX)
 
 	See sensor datasheet for more information:
 	http://bitalino.com/datasheets/REVOLUTION_ECG_Sensor_Datasheet.pdf
@@ -419,18 +463,18 @@ def lux(samples=None, resolution=10):
 
 	Parameters
 	----------
-	samples : array
-		Raw digital sensor value.
+	samples : array of ints
+		Raw digital sensor values.
 	resolution : int, optional
 		Sampling resolution used during acquisition (6-bit or 10-bit).
 
 	Returns
 	-------
-	lux_sample : float
-		Converted LUX sample (mV).
+	lux_samples : array of floats
+		Converted LUX samples (mV).
 
-	Raises
-	------
+	Raises (via _check_input())
+	---------------------------
 	TypeError
 		If no input data is provided.
 	Warnings
@@ -439,12 +483,17 @@ def lux(samples=None, resolution=10):
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	return np.asarray([s * 100. / 2 ** resolution for s in samples])
+	# Compute & check samples
+	lux_samples = np.asarray([s * 100. / 2 ** resolution for s in samples])
+	_check_ranges(lux_samples, 'LUX')
+	return lux_samples
 
 
 def osl(samples=None, resolution=10):
 	"""Converts single, raw SpO2 Reader (OSL) value into original physical units
 	(oxygen saturation in % or heart rate in bpm).
+
+	BITalino Sensor: SpO2 Reader (OSL)
 
 	See sensor datasheet for more information:
 	http://bitalino.com/datasheets/telemedicine/CMS-50D_Plus.pdf
@@ -461,18 +510,18 @@ def osl(samples=None, resolution=10):
 
 	Parameters
 	----------
-	samples : array
-		Raw digital sensor value.
+	samples : array of ints
+		Raw digital sensor values.
 	resolution : int, optional
 		Sampling resolution used during acquisition (6-bit or 10-bit).
 
 	Returns
 	-------
-	converted_sample : float
-		Converted SpO2 sample (%) or heart rate sample (bpm).
+	osl_samples : array of floats
+		Converted SpO2 samples (%) or heart rate sample (bpm).
 
-	Raises
-	------
+	Raises (via _check_input())
+	---------------------------
 	TypeError
 		If no input data is provided.
 	Warnings
@@ -481,12 +530,17 @@ def osl(samples=None, resolution=10):
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	return np.asarray([0.25 * 2 ** (10 - resolution) * float(s) - 0.8 for s in samples])
+	# Compute & check input
+	osl_samples = np.asarray([0.25 * 2 ** (10 - resolution) * float(s) - 0.8 for s in samples])
+	_check_ranges(osl_samples, 'OSL')
+	return osl_samples
 
 
 def bpr(samples=None, resolution=10):
 	"""Converts single, raw Blood Pressure Reader (BPR) value into original physical units
 	(blood pressure in mmHg).
+
+	BITalino Sensor: Blood Pressure Reader (BPR)
 
 	See sensor datasheet for more information:
 	http://bitalino.com/datasheets/telemedicine/Goodwill_Studio_Ver1.pdf
@@ -509,11 +563,11 @@ def bpr(samples=None, resolution=10):
 
 	Returns
 	-------
-	bpr : float
+	bpr_samples : float
 		Converted blood pressure samples (mmHg).
 
-	Raises
-	------
+	Raises (via _check_input())
+	---------------------------
 	TypeError
 		If no input data is provided.
 	Warnings
@@ -522,12 +576,17 @@ def bpr(samples=None, resolution=10):
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	return np.asarray([0.25 * 2 ** (10 - resolution) * float(s) - 0.8 for s in samples])
+	# Compute & check samples
+	bpr_samples = np.asarray([0.25 * 2 ** (10 - resolution) * float(s) - 0.8 for s in samples])
+	_check_ranges(bpr_samples, 'BPR')
+	return bpr_samples
 
 
 def gmr(samples=None, resolution=10):
 	"""Converts raw Glucose Meter Reader (GMR) samples into original physical units
 	(Glucose level in mg/dL).
+
+	BITalino Sensor: Glucose Meter Reader (GMR)
 
 	See sensor datasheet for more information:
 	http://bitalino.com/datasheets/telemedicine/caresens_ii.pdf
@@ -542,15 +601,15 @@ def gmr(samples=None, resolution=10):
 
 	Parameters
 	----------
-	samples : int
-		Raw digital sensor value.
+	samples : array of ints
+		Raw digital sensor values.
 	resolution : int, optional
 		Sampling resolution used during acquisition (6-bit or 10-bit).
 
 	Returns
 	-------
-	gmr : float
-		Glucose level (mg/dL).
+	gmr_samples : array of floats
+		Glucose level samples (mg/dL).
 
 	Raises
 	------
@@ -562,7 +621,108 @@ def gmr(samples=None, resolution=10):
 	# Check input
 	samples = _check_input(samples, resolution)
 
-	return np.asarray([0.25 * 2 ** (10 - resolution) * float(s) - 0.8 for s in samples])
+	# Compute & check samples
+	gmr_samples = np.asarray([0.25 * 2 ** (10 - resolution) * float(s) - 0.8 for s in samples])
+	_check_ranges(gmr_samples, 'GMR')
+	return gmr_samples
+
+
+def eog(samples=None, resolution=10):
+	"""Converts raw EOG values into original physical unit (mV).
+
+	BITalino Sensor: Electrooculography (EOG)
+
+	See sensor datasheet for more information:
+	http://bitalino.com/datasheets/REVOLUTION_EOG_Sensor_Datasheet.pdf
+
+	[TRANSFER FUNCTION]
+	ECG(mV) = ((((ADC / (2 ** n)) - 0.5) * VCC) / G_EOG) * 1000
+
+		- ADC   Value sampled from the channel
+		- n     Number of bits of the acquiring channel
+		- VCC   Operating voltage (3.3V)
+		- G_EOG Sensor gain (2040)
+
+	[RANGE]
+	-0.81mV to 0.81mV
+
+	--
+
+	Parameters
+	----------
+	samples : array of ints
+		Raw digital sensor values.
+	resolution : int, optional
+		Sampling resolution used during acquisition (6-bit or 10-bit).
+
+	Returns
+	-------
+	eog_samples : array of floats
+		Converted EOG samples (mV).
+
+	Raises (via _check_input())
+	---------------------------
+	TypeError
+		If no input data is provided.
+	Warnings
+		If sampling resolution other than 6-bit or 10-bit is being used.
+	"""
+	# Check input
+	samples = _check_input(samples, resolution)
+
+	# Compute & check samples
+	eog_samples = np.asarray([((((float(s) / (2 ** resolution)) - 0.5) * 3.3) / 2040) * 1000 for s in samples])
+	_check_ranges(eog_samples, 'EOG')
+	return eog_samples
+
+
+def egg(samples=None, resolution=10):
+	"""Converts raw EGG values into original physical unit (mV).
+
+	BITalino Sensor: Electrogastrography (EGG)
+
+	See sensor datasheet for more information:
+	http://bitalino.com/datasheets/REVOLUTION_EGG_Sensor_Datasheet.pdf
+
+	[TRANSFER FUNCTION]
+	ECG(mV) = ((((ADC / (2 ** n)) - 0.5) * VCC) / G_EGG) * 1000
+
+		- ADC   Value sampled from the channel
+		- n     Number of bits of the acquiring channel
+		- VCC   Operating voltage (3.3V)
+		- G_EGG Sensor gain (6110)
+
+	[RANGE]
+	-0.27mV to 0.27mV
+
+	--
+
+	Parameters
+	----------
+	samples : array of ints
+		Raw digital sensor value.
+	resolution : int, optional
+		Sampling resolution used during acquisition (6-bit or 10-bit).
+
+	Returns
+	-------
+	egg_sample : array of floats
+		Converted EGG samples (mV).
+
+	Raises (via _check_input())
+	---------------------------
+	TypeError
+		If no input data is provided.
+	Warnings
+		If sampling resolution other than 6-bit or 10-bit is being used.
+	"""
+	# Check input
+	samples = _check_input(samples, resolution)
+
+	# Compute & check samples
+	egg_samples = np.asarray([((((float(s) / (2 ** resolution)) - 0.5) * 3.3) / 6110) * 1000 for s in samples])
+	_check_ranges(egg_samples, 'EGG')
+	return egg_samples
 
 
 def _check_input(samples, resolution=None):
@@ -603,6 +763,25 @@ def _check_input(samples, resolution=None):
 	return np.asarray(samples)
 
 
+def _check_ranges(signal, sensor):
+	"""Checks if the computed sensor values lie within the sensor's range and raises warnings if otherwise.
+
+	Parameters
+	----------
+	samples : array
+		Raw sensor values.
+	resolution : sampling resolution
+		Sampling resolution.
+
+	"""
+	if np.min(signal) < ranges[sensor][0]:
+		warnings.warn("Minimum value of the %s sensor data is smaller than the min range of this sensor (%f < %f)."
+			% (sensor, np.min(signal), units[sensor], ranges[sensor][1], units[sensor]), stacklevel=2)
+	if np.max(signal) > ranges[sensor][1]:
+		warnings.warn("Maximum value of the %s sensor data is greater than the max range of this sensor (%f%s > %f%s)."
+			 % (sensor, np.max(signal), units[sensor], ranges[sensor][1], units[sensor]), stacklevel=2)
+
+
 # DICTIONARIES
 units = {
 	'RAW': '-',
@@ -618,7 +797,9 @@ units = {
 	'HR': 'bpm',
 	'OXI': '%',
 	'SYS': 'mmHg',
-	'DIA': 'mmHg'
+	'DIA': 'mmHg',
+	'EOG': 'mV',
+	'EGG': 'mV'
 }
 
 ranges = {
@@ -635,7 +816,9 @@ ranges = {
 	'HR': [30, 250],
 	'OXI': [0, 100],
 	'SYS': [0, 300],
-	'DIA': [0, 300]
+	'DIA': [0, 300],
+	'EOG': [-0.81, 0.81],
+	'EGG': [-0.27, 0.27]
 }
 
 transfer_functions = {
@@ -651,7 +834,9 @@ transfer_functions = {
 	'HR': osl,
 	'OXI': osl,
 	'SYS': gmr,
-	'DIA': gmr
+	'DIA': gmr,
+	'EOG': eog,
+	'EGG': egg
 }
 
 

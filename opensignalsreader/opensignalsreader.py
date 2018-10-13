@@ -36,11 +36,14 @@ Last Update
 07-09-2018
 
 """
+# Imports
 import json
 import warnings
 import matplotlib.pyplot as plt
 import numpy as np
-import bitalino_transfer_functions as bit
+
+# Package imports
+import bitalino_tf as bit
 
 
 class OpenSignalsReader():
@@ -60,7 +63,7 @@ class OpenSignalsReader():
 	"""
 
 	def __init__(self, os_file=None, show=False, raw=False):
-		# Member variables
+		# Member variables (acquisition metadata)
 		self.file = None
 		self.file_name = None
 		self.device = None
@@ -130,48 +133,55 @@ class OpenSignalsReader():
 		data = json.loads(self.file.readline().replace('#', ''))
 		data = data[str(data.keys()[0])]
 
-		# Save metadata
-		self.sensors = [str(x) for x in data['sensor']]
-		for i, sens in enumerate(self.sensors):
-			if 'BITREV' in sens:
-				self.sensors[i] = sens.replace('BITREV', '')
-			elif 'BIT' in sens:
-				self.sensors[i] = sens.replace('BIT', '')
+		if data['device'] != 'biosignalsplux':
+			# Load data if the acquisition device has been a BITalino
+			# Save metadata
+			self.sensors = [str(x) for x in data['sensor']]
+			for i, sens in enumerate(self.sensors):
+				if 'BITREV' in sens:
+					self.sensors[i] = sens.replace('BITREV', '')
+				elif 'BIT' in sens:
+					self.sensors[i] = sens.replace('BIT', '')
 
-		# Save metadata in info dictionary
-		self.info = dict()
-		self.info.update({'device name': data['device name']})
-		self.info.update({'column': [str(x) for x in data['column']]})
-		self.info.update({'time': data['time']})
-		self.info.update({'date': data['date']})
-		self.info.update({'comments': data['comments']})
-		self.info.update({'mac': data['device connection']})
-		self.info.update({'channels': data['channels']})
-		self.info.update({'firmware': data['firmware version']})
-		self.info.update({'device': data['device']})
-		self.info.update({'sampling rate': data['sampling rate']})
-		self.info.update({'resolution': data['resolution']})
-		self.info.update({'label': data['label']})
+			# Save metadata in info dictionary
+			self.info = dict()
+			self.info.update({'device name': data['device name']})
+			self.info.update({'column': [str(x) for x in data['column']]})
+			self.info.update({'time': data['time']})
+			self.info.update({'date': data['date']})
+			self.info.update({'comments': data['comments']})
+			self.info.update({'mac': data['device connection']})
+			self.info.update({'channels': data['channels']})
+			self.info.update({'firmware': data['firmware version']})
+			self.info.update({'device': data['device']})
+			self.info.update({'sampling rate': data['sampling rate']})
+			self.info.update({'resolution': data['resolution']})
+			self.info.update({'label': data['label']})
 
-		# Save critical data
-		self.device = self.info['device']
-		self.name = self.info['device name']
-		self.mac = self.info['mac']
-		self.sampling_rate = self.info['sampling rate']
-		self.channels = self.info['channels']
-		self._labels = [str(x) for x in self.info['label']]
+			# Save critical data
+			self.device = self.info['device']
+			self.name = self.info['device name']
+			self.mac = self.info['mac']
+			self.sampling_rate = self.info['sampling rate']
+			self.channels = self.info['channels']
+			self._labels = [str(x) for x in self.info['label']]
 
-		if self.device == 'bitalino' or 'bitalino_rev':
-			self.ranges = bit.ranges
-			self.units = bit.units
-			self.transfer_functions = bit.transfer_functions
+			if self.device == 'bitalino' or 'bitalino_rev':
+				self.ranges = bit.ranges
+				self.units = bit.units
+				self.transfer_functions = bit.transfer_functions
 
-		# TODO add biosignalsplux
-		if self.device == 'biosignalsplux':
-			pass
+		else:
+			raise ValueError("Expected acquisition data from 'BITalino' device, but received from 'biosignalsplux'."
+							 "'biosignalsplux' is not supported at the moment.")
 
 	def _read_sensordata(self):
-		"""Reads sensor data and calls required functions to convert into original units it required and possible.
+		"""Reads sensor data and calls required functions to convert into original units id required and possible.
+
+		Notes
+		-----
+		..	Raw sensor data from unsupported sensors (i.e. sensors not listed in the dictionaries in 'bitalino_tf')
+			will not be converted. Raw sensor data will be returned.
 
 		"""
 		# Load data
@@ -366,7 +376,7 @@ class OpenSignalsReader():
 				# Check if channels exists
 				_na_sensors = [x for x in sensors if x not in self._sensor_channels.keys()]
 				if _na_sensors:
-						raise ValueError("Could not find channel(s) %s in available channels." % str(_na_sensors))
+					raise ValueError("Could not find channel(s) %s in available channels." % str(_na_sensors))
 				keys = [self._sensor_channels[key] for key in sensors]
 				output = dict()
 
@@ -537,7 +547,7 @@ class OpenSignalsReader():
 			# Plot single sensor signal
 			channel = self._channels_sensors[sensors]
 			if figsize is None:
-				figsize = (12, 3)
+				figsize = (12, 4)
 			if raw:
 				signal = self._raw_signals[sensors]
 				units = 'RAW'
@@ -560,6 +570,9 @@ class OpenSignalsReader():
 			plt.show()
 
 	def _get_key(self, sensor):
+		"""
+
+		"""
 		key = ''.join([x for x in sensor if not x.isdigit()])
 		if key not in self.transfer_functions.keys():
 			return'RAW'
@@ -569,7 +582,7 @@ class OpenSignalsReader():
 
 if __name__ == '__main__':
 	# Create OpenSignals object and read file with automatic signal conversion and plot results
-	acq = OpenSignalsReader('SampleECG.txt')
+	acq = OpenSignalsReader('/files/SampleECG.txt')
 
 	# Plot all signals
 	acq.plot()
@@ -577,7 +590,7 @@ if __name__ == '__main__':
 	# Plot all raw signals
 	acq.plot(raw=True)
 
-	# Plot ECG signal using channel number
+	# Plot ECG signal using channel number (ECG Channel on BITalino (r)evolution boards = 2)
 	acq.plot(2)
 
 	# Plot ECG signal using channel label
@@ -589,8 +602,8 @@ if __name__ == '__main__':
 	# Access signal using channel label
 	acq.signal('ECG')
 
-	# Access raw signal using channel number
-	acq.raw(1)
+	# Access raw signal using channel number (ECG Channel on BITalino (r)evolution boards = 2)
+	acq.raw(2)
 
 	# Access raw signal using channel label
 	acq.raw('ECG')

@@ -8,5 +8,6 @@ Version tracker.
 :license: BSD 3-clause, see LICENSE for more details.
 """
 
-VERSION = (0, 1)
+VERSION = (0, 2, 1)
 __version__ = '.'.join(map(str, VERSION))
+print(__version__)
