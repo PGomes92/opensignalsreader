@@ -1,6 +1,10 @@
 # opensignalsreader
 Python package to read [OpenSignals (r)evolution](http://bitalino.com/en/software) files and automatic sensor data conversion for [BITalino (r)evolution](http://bitalino.com) sensor data.
 
+**Important:** 
+This repository does not contain any code written by PLUX and/or the BITalino team. Use the [issue board of the opensignalsreader repository](https://github.com/PGomes92/opensignalsreader/issues) in case you experience any issues using opensignalsreader or if you need any support, instead of contacting PLUX.
+
+
 ## Installation
 This package can be installed using the ```pip``` tool:
 ```python
@@ -134,6 +138,7 @@ Download the OpenSignals (r)evolution software from the BITalino website:
 http://bitalino.com/en/software
 
 ### Important Notes
+- Please **do not sent support e-mails for the use of this package to PLUX**. This package is not part of any of PLUX's solutions, but an independent open-source package to facilitate the data import stored in OpenSignals files. Use the [issue board of this repository](https://github.com/PGomes92/opensignalsreader/issues) in case you find any issues with this package or if you need any support.
 - OpenSignals (r)evolution files in .H5 or .EDF format are not supported (yet)
 - No multi-device acquisition functions supported (yet, currently limited to a single device only) 
 - Number of plotted signals is currently limited to 6 signals only

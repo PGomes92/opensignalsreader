@@ -25,23 +25,24 @@ https://github.com/BITalinoWorld/revolution-sample-data
 
 Notes
 -----
-..  This module is part of the master thesis
-	"Development of an Open-Source Python Toolbox for Heart Rate Variability (HRV)".
 ..  Transfer functions are compatible for conversion data of BITalino (r)evolution
 	devices only; older versions of BITalino are not supported
 
 Author
 ------
-..  Pedro Gomes, Master Student, University of Applied Sciences Hamburg
+..  Pedro Gomes, pgomes92@gmail.com
 
-Thesis Supervisors
-------------------
-..  Hugo Silva, PhD, Instituto de Telecomunicacoes, PLUX wireless biosignals S.A.
-..  Prof. Dr. Petra Margaritoff, University of Applied Sciences Hamburg
+Notes Up To Version 0.2.1
+-------------------------
+..  Versions 0.2.1 and earlier of this package were part of the master thesis
+    "Development of an Open-Source Python Toolbox for Heart Rate Variability (HRV)".
+..	Thesis Author: Pedro Gomes, Master Student, University of Applied Sciences Hamburg
+..  1st Supervisor: Prof. Dr. Petra Margaritoff, University of Applied Sciences Hamburg
+..  2nd Supervisor: Hugo Silva, PhD, Instituto de Telecomunicacoes, PLUX wireless biosignals S.A.
 
 Last Update
 -----------
-13-10-2018
+06.06.2018
 
 """
 import warnings

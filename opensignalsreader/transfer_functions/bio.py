@@ -1,4 +1,6 @@
-
+"""
+This script will contain the transfer functions for biosignalsplux sensors in the future...
+"""
 
 # DICTIONARIES
 units = {
